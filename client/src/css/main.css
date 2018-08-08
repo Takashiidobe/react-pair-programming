@@ -1,0 +1,30 @@
+* {
+  box-sizing: border-box;
+  font-family: "Inconsolata", "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif; }
+
+.App {
+  width: 100vw;
+  height: 100vh;
+  display: grid;
+  grid-gap: 1rem 1rem;
+  grid-template-areas: "editors" "compiled"; }
+  .App .editors {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-areas: "html css js"; }
+    .App .editors .code-mirror {
+      width: 30vw; }
+    .App .editors #html {
+      grid-area: html; }
+    .App .editors #css {
+      grid-area: css; }
+    .App .editors #js {
+      grid-area: js; }
+  .App .compiled {
+    grid-area: compiled;
+    justify-self: center;
+    width: 90%;
+    height: 90%; }
+    .App .compiled #output {
+      width: 100%;
+      height: 100%; }
