@@ -16,13 +16,9 @@ require("srcdoc-polyfill");
 
 //our backend server that we're connecting to
 const socket = io("http://localhost:4001");
-//class with state (skip constructor/super because we have no other components)
-
-//metaLeft = 91
-//metaRight = 93
-//Enter = 13
 
 class App extends Component {
+  //class with state (skip constructor/super because we have no other components)
   state = {
     js: "",
     html: "",
@@ -30,8 +26,6 @@ class App extends Component {
   };
 
   componentDidMount() {
-    console.log(this.state);
-
     socket.on("value", value => {
       this.setState({
         html: value.html,
@@ -62,14 +56,6 @@ class App extends Component {
     output.srcdoc = `${this.state.html}<style>
     ${this.state.css}</style><script>${this.state.js}</script>`;
   }
-
-  onHandleSubmit = () => {
-    socket.emit("submit", {
-      html: this.state.html,
-      css: this.state.css,
-      js: this.state.js
-    });
-  };
 
   render() {
     return (
