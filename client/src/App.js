@@ -2,7 +2,10 @@
 import React, { Component } from "react";
 import io from "socket.io-client";
 import "./css/main.css";
+//the uncontrolled component allows us to type inside of it
 import { UnControlled as CodeMirror } from "react-codemirror2";
+
+//our css imports to allow our code editors to look nifty
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
 
@@ -22,21 +25,30 @@ class App extends Component {
   state = {
     js: "",
     html: "",
-    css: ""
+    css: "",
+    typing: []
   };
 
   componentDidMount() {
-    socket.on("value", value => {
+    socket.on("append value", value => {
       this.setState({
-        html: value.html,
-        css: value.css,
-        js: value.js
+        html: this.state.html.concat(`\n + ${value.html}`),
+        css: this.state.css.concat(`\n + ${value.css}`),
+        js: this.state.js.concat(`\n + ${value.js}`)
       });
     });
 
-    //overrides the default ctrl and command key to allow for saving.
+    socket.on("render html", value => {
+      this.setState({
+        html: value.html
+      });
+    });
+
+    //allows for ctrl||cmd + shift + s to save and override
+    //allows for ctrl||cmd + shift + a to append to the end of friends' text
+    //allows for ctrl||cmd + shift + c to clear the text
     window.addEventListener("keydown", e => {
-      if (e.ctrlKey || e.metaKey) {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey) {
         switch (String.fromCharCode(e.which).toLowerCase()) {
           case "s":
             e.preventDefault();
@@ -46,15 +58,35 @@ class App extends Component {
               js: this.state.js
             });
             break;
+          case "a":
+            e.preventDefault();
+            socket.emit("append", {
+              html: this.state.html,
+              css: this.state.css,
+              js: this.state.js
+            });
+            break;
+          case "c":
+            e.preventDefault();
+            this.setState({
+              html: "",
+              css: "",
+              js: ""
+            });
+            break;
+          default:
+            break;
         }
       }
     });
   }
+  componentWillUpdate() {}
 
   componentDidUpdate() {
     let output = document.getElementById("output");
     output.srcdoc = `${this.state.html}<style>
     ${this.state.css}</style><script>${this.state.js}</script>`;
+    console.log(output);
   }
 
   render() {
@@ -64,13 +96,17 @@ class App extends Component {
           <div id="html">
             <CodeMirror
               className="code-mirror"
-              value={this.state.html}
+              value=""
               options={{
                 mode: "html",
                 theme: "material",
                 lineNumbers: true
               }}
               onChange={(editor, data, value) => {
+                console.log(value);
+                socket.emit("change html", {
+                  html: value
+                });
                 this.setState({
                   html: value
                 });
@@ -92,7 +128,6 @@ class App extends Component {
                 });
               }}
             />
-            <button onClick={this.onHandleSubmit}>Submit</button>
           </div>
           <div id="js">
             <CodeMirror
@@ -112,6 +147,7 @@ class App extends Component {
             />
           </div>
         </div>
+        <div id="typing">{this.state.typing}</div>
         <div className="compiled">
           <iframe
             id="output"

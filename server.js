@@ -24,13 +24,19 @@ io.on("connection", socket => {
     });
   });
 
-  socket.on("submit", value => {
-    socket.broadcast.emit("value", {
+  socket.on("change html", value => {
+    socket.broadcast.emit("render html", {
+      html: value.html
+    });
+    console.log(value.html);
+  });
+
+  socket.on("append", value => {
+    socket.broadcast.emit("append value", {
       html: value.html,
       css: value.css,
       js: value.js
     });
-    console.log(value.html, value.css, value.js);
   });
 
   socket.on("disconnect", socket => {
@@ -39,3 +45,10 @@ io.on("connection", socket => {
 });
 
 server.listen(port, () => console.log(`listening on port ${port}`));
+
+server.on("error", () => {
+  console.log(`there was an error`);
+  server.close(() => {
+    process.exit(0);
+  });
+});
